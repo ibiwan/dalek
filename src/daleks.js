@@ -1,5 +1,7 @@
-export const BOARD_SIZE = 5;
-const DALEK_COUNT = 16;
+/* eslint-disable no-continue */
+
+export const BOARD_SIZE = 10;
+const DALEK_COUNT = 20;
 const DALEK_SYMBOL = '☖';
 const DOCTOR_SYMBOL = '☗';
 const MAX_ATTEMPTS = 100;
@@ -37,8 +39,7 @@ const getUniqueInitial = (takenSpaces, minDist = 0) => {
 
     attempts += 1;
     if (attempts > MAX_ATTEMPTS) {
-      console.log("COULDN'T FIND GOOD STARTING POINT; GIVING UP");
-      break;
+      return undefined;
     }
   } while (getMinDist(square, takenSpaces) < minDist);
 
@@ -58,6 +59,11 @@ export const makeNewDaleks = (existing = []) => {
     .map(
       () => {
         const loc = getUniqueInitial(initialSpaces, 1);
+
+        if (!loc) {
+          return null;
+        }
+
         initialSpaces.push(loc);
 
         return {
@@ -65,14 +71,18 @@ export const makeNewDaleks = (existing = []) => {
           ...loc,
         };
       },
-    );
+    )
+    .filter((x) => x);
 };
 
 export const placeDoctor = (existing = []) => {
   const initialSpaces = [...existing];
+  console.log({ initialSpaces });
+  const loc = getUniqueInitial(initialSpaces, 1);
+  console.log({ loc });
   return {
     symbol: DOCTOR_SYMBOL,
-    ...getUniqueInitial(initialSpaces, 0),
+    ...loc,
   };
 };
 
@@ -113,4 +123,31 @@ export const moveDaleks = (
 //     newSquares,
 //     newDaleks: [],
 //   };
+};
+
+export const getValidMoves = (orig, elements) => {
+  const validMoves = [];
+
+  for (let i = orig.x - 1; i <= orig.x + 1; i += 1) {
+    for (let j = orig.y - 1; j <= orig.y + 1; j += 1) {
+      if (orig.x === i && orig.y === j) {
+        continue;
+      }
+      if (i < 0 || j < 0) {
+        continue;
+      }
+      if (i >= BOARD_SIZE || j >= BOARD_SIZE) {
+        continue;
+      }
+      if (elements.some(
+        (dalek) => dalek.x === i && dalek.y === j,
+      )) {
+        continue;
+      }
+
+      validMoves.push({ x: i, y: j });
+    }
+  }
+
+  return validMoves;
 };

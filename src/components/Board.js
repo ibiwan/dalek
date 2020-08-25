@@ -9,6 +9,7 @@ function Board({ size, elements, handleClick }) {
   const squares = makeNewBoard(size);
 
   elements.forEach(({ symbol, x, y }) => {
+    console.log({ x, y, symbol });
     squares[x][y] = symbol;
   });
 

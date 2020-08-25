@@ -4,6 +4,7 @@ import Board from './Board';
 import {
   BOARD_SIZE,
   getDist,
+  getValidMoves,
   makeNewBoard,
   makeNewDaleks,
   movePlayer,
@@ -32,16 +33,16 @@ function Game() {
 
   // console.log({ doctor });
 
-  const [
-    daleks,
-    setDaleks,
-  ] = useState(makeNewDaleks());
-
   const [doctor,
     setDoctor,
-  ] = useState(placeDoctor(daleks));
+  ] = useState(placeDoctor());
+  const [
 
-  // console.log({ doctor, daleks });
+    daleks,
+    setDaleks,
+  ] = useState(makeNewDaleks([doctor]));
+
+  console.log({ doctor, daleks });
 
   const elements = [
     doctor,
@@ -53,56 +54,19 @@ function Game() {
   // console.log({ squares, winner });
 
   const handleClick = (x, y) => {
-    const validMoves = [];
-    for (let i = doctor.x - 1; i <= doctor.x + 1; i += 1) {
-      for (let j = doctor.y - 1; j <= doctor.y + 1; j += 1) {
-        if (doctor.x === i && doctor.y === j) {
-          console.log('no staying still');
-          break;
-        }
-        if (i <= 0 || j <= 0) {
-          console.log('no going off the board neg');
-          break;
-        }
-        if (i >= BOARD_SIZE || j >= BOARD_SIZE) {
-          console.log('no going off the board pos');
-          break;
-        }
-        if (daleks.some(
-          (dalek) => dalek.x === i && dalek.y === j,
-        )) {
-          console.log('no attacking daleks');
-          break;
-        }
+    console.log({ doctor });
 
-        validMoves.push({ x: i, y: j });
-      }
-    }
+    const validMoves = getValidMoves(doctor, elements);
 
     console.log({ validMoves });
 
     if (validMoves.length === 0) {
       alert('STUCK!');
     }
-
-    // console.log({ x, y });
-
-    if (doctor.x === x && doctor.y === y) {
-      console.log('too near');
+    if (!validMoves.some(({ x: mx, y: my }) => mx === x && my === y)) {
+      console.log('invalid move requested');
       return;
     }
-
-    if (getDist(doctor, { x, y }, true) >= 1.5) {
-      console.log('too far');
-      return;
-    }
-
-    if (elements.some((el) => getDist({ x, y }, el) === 0 && el.symbol !== doctor.symbol)) {
-      console.log('no good; somethings already there');
-      return;
-    }
-
-    console.log('valid');
 
     setDoctor({ ...doctor, x, y });
 

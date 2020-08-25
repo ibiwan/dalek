@@ -5,7 +5,8 @@ const Square = ({
   i, j, value = null, handleClick,
 }) => (
   <button type="button" className="square" onClick={() => handleClick(i, j)}>
-    {value}
+    {value || `${i},${j}`}
+    {/* {value} */}
   </button>
 );
 

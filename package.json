@@ -18,8 +18,20 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
-  },
+    "extends": ["react-app", "airbnb"],
+    "rules": {
+      "no-continue": 0,
+      "no-unused-vars": ["warn", { "vars": "all", "args": "after-used" }],
+      "array-element-newline": ["warn", "consistent"],
+      "object-curly-newline": [
+        "warn",
+        {
+          "consistent": true
+        }
+      ],
+      "react/jsx-filename-extension": "off"
+    }
+    },
   "browserslist": {
     "production": [
       ">0.2%",
