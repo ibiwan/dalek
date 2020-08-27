@@ -2,13 +2,18 @@
   "name": "dalek",
   "version": "0.1.0",
   "private": true,
+  "add-a-dependency": {
+    "framer-motion": "2.6.0"
+  },
   "dependencies": {
+    "@reduxjs/toolkit": "^1.4.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-redux": "^7.2.1",
     "react-scripts": "3.4.3"
   },
   "scripts": {
@@ -18,11 +23,23 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": ["react-app", "airbnb"],
+    "extends": [
+      "react-app",
+      "airbnb"
+    ],
     "rules": {
       "no-continue": 0,
-      "no-unused-vars": ["warn", { "vars": "all", "args": "after-used" }],
-      "array-element-newline": ["warn", "consistent"],
+      "no-unused-vars": [
+        "warn",
+        {
+          "vars": "all",
+          "args": "after-used"
+        }
+      ],
+      "array-element-newline": [
+        "warn",
+        "consistent"
+      ],
       "object-curly-newline": [
         "warn",
         {
@@ -31,7 +48,7 @@
       ],
       "react/jsx-filename-extension": "off"
     }
-    },
+  },
   "browserslist": {
     "production": [
       ">0.2%",

@@ -1,10 +1,19 @@
+/* eslint-disable no-console */
 /* eslint-disable no-continue */
 
 export const BOARD_SIZE = 10;
 const DALEK_COUNT = 20;
 const DALEK_SYMBOL = '☖';
 const DOCTOR_SYMBOL = '☗';
+const DONNA_SYMBOL = '👰';
 const MAX_ATTEMPTS = 100;
+
+export const PLAYER_TEMPLATES = [
+  { name: 'Doctor', symbol: DOCTOR_SYMBOL },
+  { name: 'Donna', symbol: DONNA_SYMBOL },
+];
+
+export const NUM_PLAYERS = PLAYER_TEMPLATES.length;
 
 export const getDist = (
   { x: x1, y: y1 },
@@ -52,8 +61,8 @@ export const makeNewBoard = (
   () => Array(size).fill(null),
 );
 
-export const makeNewDaleks = (existing = []) => {
-  const initialSpaces = [...existing];
+export const placeDaleks = (existing) => {
+  const initialSpaces = existing.map(({ loc }) => loc);
   return Array(DALEK_COUNT)
     .fill()
     .map(
@@ -68,69 +77,38 @@ export const makeNewDaleks = (existing = []) => {
 
         return {
           symbol: DALEK_SYMBOL,
-          ...loc,
+          loc,
         };
       },
     )
     .filter((x) => x);
 };
 
-export const placeDoctor = (existing = []) => {
+export const placePlayers = (existing = []) => {
   const initialSpaces = [...existing];
-  console.log({ initialSpaces });
-  const loc = getUniqueInitial(initialSpaces, 1);
-  console.log({ loc });
-  return {
-    symbol: DOCTOR_SYMBOL,
-    ...loc,
-  };
+
+  return PLAYER_TEMPLATES.map((player) => {
+    const loc = getUniqueInitial(initialSpaces, 1);
+    initialSpaces.push(loc);
+    return {
+      ...player,
+      loc,
+    };
+  });
 };
 
-export const movePlayer = (
-//   squares,
-//   // name,
-//   { symbol, x, y },
-//   { i, j },
-) => {
-  console.log('CALL: movePlayer');
-
-  //   console.log({ squares,
-  //     symbol,
-  //     x,
-  //     y,
-  //     new: { i, j } });
-
-  //   const newSquares = squares.map((row) => [...row]);
-
-  //   console.log({ newSquares });
-
-//   return {
-//     newSquares,
-//     newPlayer: {},
-//     newStatus: null,
-//   };
-};
-
-export const moveDaleks = (
-//   squares,
-//   daleks,
-) => {
-//   console.log({ squares, daleks });
-
-  //   const newSquares = squares.map((row) => [...row]);
-
-//   return {
-//     newSquares,
-//     newDaleks: [],
-//   };
-};
-
-export const getValidMoves = (orig, elements) => {
+export const getValidMoves = (playerNo, players, daleks) => {
   const validMoves = [];
+  const elements = [
+    ...players.filter((player, i) => i !== playerNo),
+    ...daleks,
+  ];
 
-  for (let i = orig.x - 1; i <= orig.x + 1; i += 1) {
-    for (let j = orig.y - 1; j <= orig.y + 1; j += 1) {
-      if (orig.x === i && orig.y === j) {
+  const { loc: { x, y } } = players[playerNo];
+
+  for (let i = x - 1; i <= x + 1; i += 1) {
+    for (let j = y - 1; j <= y + 1; j += 1) {
+      if (x === i && y === j) {
         continue;
       }
       if (i < 0 || j < 0) {
@@ -140,7 +118,10 @@ export const getValidMoves = (orig, elements) => {
         continue;
       }
       if (elements.some(
-        (dalek) => dalek.x === i && dalek.y === j,
+        ({ loc: {
+          x: elX,
+          y: elY,
+        } }) => elX === i && elY === j,
       )) {
         continue;
       }
