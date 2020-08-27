@@ -10,7 +10,7 @@ const MAX_ATTEMPTS = 100;
 
 export const PLAYER_TEMPLATES = [
   { name: 'Doctor', symbol: DOCTOR_SYMBOL },
-  { name: 'Donna', symbol: DONNA_SYMBOL },
+  // { name: 'Donna', symbol: DONNA_SYMBOL },
 ];
 
 export const NUM_PLAYERS = PLAYER_TEMPLATES.length;
@@ -66,7 +66,7 @@ export const placeDaleks = (existing) => {
   return Array(DALEK_COUNT)
     .fill()
     .map(
-      () => {
+      (_, i) => {
         const loc = getUniqueInitial(initialSpaces, 1);
 
         if (!loc) {
@@ -76,6 +76,7 @@ export const placeDaleks = (existing) => {
         initialSpaces.push(loc);
 
         return {
+          name: `dalek-${i}`,
           symbol: DALEK_SYMBOL,
           loc,
         };

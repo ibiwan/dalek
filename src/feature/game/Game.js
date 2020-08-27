@@ -25,15 +25,15 @@ function Game() {
   return (
     <div className="game">
       <div className="game-board">
+        <div className="game-info">
+          <div>{status}</div>
+        </div>
         <Board {...{
           handleClick: (x, y) => dispatch(playerMoved({ loc: { x, y } })),
           size: BOARD_SIZE,
           elements,
         }}
         />
-      </div>
-      <div className="game-info">
-        <div>{status}</div>
       </div>
     </div>
   );
