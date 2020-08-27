@@ -10,10 +10,8 @@ const MAX_ATTEMPTS = 100;
 
 export const PLAYER_TEMPLATES = [
   { name: 'Doctor', symbol: DOCTOR_SYMBOL },
-  // { name: 'Donna', symbol: DONNA_SYMBOL },
+  { name: 'Donna', symbol: DONNA_SYMBOL },
 ];
-
-export const NUM_PLAYERS = PLAYER_TEMPLATES.length;
 
 export const getDist = (
   { x: x1, y: y1 },
@@ -85,10 +83,16 @@ export const placeDaleks = (existing) => {
     .filter((x) => x);
 };
 
-export const placePlayers = (existing = []) => {
+export const placePlayers = (n = PLAYER_TEMPLATES.length, existing = []) => {
   const initialSpaces = [...existing];
+  let useN = n;
+  if (useN > PLAYER_TEMPLATES.length) {
+    console.log('TOO MANY PLAYERS REQUESTED; USING ALL');
+    useN = PLAYER_TEMPLATES.length;
+  }
+  const usePlayers = PLAYER_TEMPLATES.filter((_, i) => i < useN);
 
-  return PLAYER_TEMPLATES.map((player) => {
+  return usePlayers.map((player) => {
     const loc = getUniqueInitial(initialSpaces, 1);
     initialSpaces.push(loc);
     return {

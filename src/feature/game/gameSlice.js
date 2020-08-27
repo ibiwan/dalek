@@ -4,13 +4,15 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import {
-  NUM_PLAYERS,
   getValidMoves,
   placeDaleks,
   placePlayers,
 } from './daleks';
 
-const newPlayers = placePlayers();
+let nPlayers = 12;
+
+const newPlayers = placePlayers(nPlayers);
+nPlayers = newPlayers.length;
 console.log({ newPlayers });
 
 const [{ name, symbol }] = newPlayers; // first player
@@ -59,7 +61,7 @@ export const gameSlice = createSlice({
 
       // advance turn counter
       let newPlayerNo = playerNo + 1;
-      if (newPlayerNo >= NUM_PLAYERS) {
+      if (newPlayerNo >= nPlayers) {
         newPlayerNo = 0;
 
         // dispatch daleks' moves
