@@ -4,16 +4,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import {
-  getValidMoves,
+  getDalekMoves,
+  isValidMove,
   placeDaleks,
   placePlayers,
 } from './daleks';
 
-let nPlayers = 12;
+let nPlayers = 3;
 
-const newPlayers = placePlayers(nPlayers);
+const newDaleks = placeDaleks();
+const newPlayers = placePlayers(nPlayers, newDaleks);
+
 nPlayers = newPlayers.length;
-console.log({ newPlayers });
 
 const [{ name, symbol }] = newPlayers; // first player
 
@@ -23,71 +25,86 @@ export const gameSlice = createSlice({
     playerNo: 0,
     stepNo: 0,
     players: newPlayers,
-    daleks: placeDaleks(newPlayers),
+    daleks: newDaleks,
     status: `First move: ${symbol} ${name}`,
   },
   reducers: {
-    playerMoved: (
+    playerMoveAllowed: (
       state,
-      {
-        payload: {
-          loc: {
-            x,
-            y,
-          },
-        },
-      },
+      { payload: {
+        loc: { x, y },
+      } },
     ) => {
+      const {
+        playerNo,
+        players,
+      } = state;
+
+      // advance turn counter
+      const newPlayerNo = playerNo + 1;
+
+      players[playerNo].loc = { x, y };
+      state.playerNo = newPlayerNo;
+
+      if (newPlayerNo < nPlayers) {
+        const {
+          name: newName,
+          symbol: newSymbol,
+        } = players[newPlayerNo];
+
+        state.status = `Next Move: ${newSymbol} ${newName}`;
+      } else {
+        state.status = 'The Daleks Advance';
+      }
+    },
+    daleksMoved: (state) => {
       const {
         playerNo,
         players,
         daleks,
       } = state;
-      const player = players[playerNo];
 
-      // console.log({ NUM_PLAYERS, playerNo, players, player, daleks, x, y });
-
-      const validMoves = getValidMoves(playerNo, players, daleks);
-      // console.log({ validMoves });
-
-      // if (validMoves.length === 0) {
-      //   alert('STUCK!');
-      // }
-
-      if (!validMoves.some(({ x: mx, y: my }) => mx === x && my === y)) {
-        console.log('invalid move requested');
+      if (playerNo < nPlayers) {
         return;
       }
 
-      // advance turn counter
-      let newPlayerNo = playerNo + 1;
-      if (newPlayerNo >= nPlayers) {
-        newPlayerNo = 0;
+      const nextDaleks = getDalekMoves(players, daleks);
 
-        // dispatch daleks' moves
-      }
-      const {
-        name: newName,
-        symbol: newSymbol,
-      } = players[newPlayerNo];
-
-      // updates
-      player.loc = { x, y };
-      state.playerNo = newPlayerNo;
-      state.status = `Next Move: ${newSymbol} ${newName}`;
+      state.daleks = nextDaleks;
+      state.playerNo = 0;
+      state.status = `Next Move: ${symbol} ${name}`;
     },
-    daleksMoved: () => {},
   },
 });
 
 export const {
-  playerMoved,
+  playerMoveAllowed,
   daleksMoved,
 } = gameSlice.actions;
 
 export const selectPlayers = (state) => state.game.players;
 export const selectDaleks = (state) => state.game.daleks;
 export const selectStatus = (state) => state.game.status;
-export const selectCurrentPlayer = (state) => state.game.player[state.game.playerNo];
+
+export const playerMoveAttempted = ({ x, y }) => (dispatch, getState) => {
+  const { game: {
+    playerNo,
+    players,
+    daleks,
+  } } = getState();
+
+  if (playerNo === nPlayers) {
+    return;
+  }
+
+  if (!isValidMove(playerNo, players, daleks, { x, y })) {
+    console.log('invalid move requested');
+    return;
+  }
+
+  dispatch(playerMoveAllowed({ loc: { x, y } }));
+
+  setImmediate(() => dispatch(daleksMoved()));
+};
 
 export default gameSlice.reducer;

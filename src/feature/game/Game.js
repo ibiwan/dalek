@@ -5,7 +5,7 @@ import Board from '../board/Board';
 import { BOARD_SIZE } from './daleks';
 
 import {
-  playerMoved,
+  playerMoveAttempted,
   selectPlayers,
   selectDaleks,
   selectStatus,
@@ -29,7 +29,7 @@ function Game() {
           <div>{status}</div>
         </div>
         <Board {...{
-          handleClick: (x, y) => dispatch(playerMoved({ loc: { x, y } })),
+          handleClick: (x, y) => dispatch(playerMoveAttempted({ x, y })),
           size: BOARD_SIZE,
           elements,
         }}
