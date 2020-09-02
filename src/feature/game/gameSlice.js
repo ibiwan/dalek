@@ -8,25 +8,32 @@ import {
   isValidMove,
   placeDaleks,
   placePlayers,
+  timePromise,
+  collideDaleks,
+
 } from './daleks';
 
-let nPlayers = 3;
+let nPlayers = 1;
+const animationSeconds = 0.4;
 
 const newDaleks = placeDaleks();
 const newPlayers = placePlayers(nPlayers, newDaleks);
 
 nPlayers = newPlayers.length;
 
-const [{ name, symbol }] = newPlayers; // first player
+const [playerOne] = newPlayers; // first player
 
 export const gameSlice = createSlice({
   name: 'game',
   initialState: {
+    animationSeconds,
     playerNo: 0,
     stepNo: 0,
     players: newPlayers,
     daleks: newDaleks,
-    status: `First move: ${symbol} ${name}`,
+    rubble: [],
+    isPlayersTurn: true,
+    status: `First move: ${playerOne.symbol} ${playerOne.name}`,
   },
   reducers: {
     playerMoveAllowed: (
@@ -40,71 +47,113 @@ export const gameSlice = createSlice({
         players,
       } = state;
 
-      // advance turn counter
-      const newPlayerNo = playerNo + 1;
-
       players[playerNo].loc = { x, y };
-      state.playerNo = newPlayerNo;
+    },
+    advancePlayer: (
+      state,
+      { payload: reset = false },
+    ) => {
+      const { playerNo } = state;
 
-      if (newPlayerNo < nPlayers) {
+      state.playerNo = reset ? 0 : playerNo + 1;
+      state.isPlayersTurn = state.playerNo < nPlayers;
+    },
+    advanceStatus: (state) => {
+      const { playerNo, players, isPlayersTurn } = state;
+
+      if (isPlayersTurn) {
         const {
-          name: newName,
-          symbol: newSymbol,
-        } = players[newPlayerNo];
+          name,
+          symbol,
+        } = players[playerNo];
 
-        state.status = `Next Move: ${newSymbol} ${newName}`;
+        state.status = `Next Move: ${symbol} ${name}`;
       } else {
         state.status = 'The Daleks Advance';
       }
     },
     daleksMoved: (state) => {
       const {
-        playerNo,
         players,
         daleks,
       } = state;
 
-      if (playerNo < nPlayers) {
-        return;
-      }
-
-      const nextDaleks = getDalekMoves(players, daleks);
-
-      state.daleks = nextDaleks;
+      getDalekMoves(players, daleks);
       state.playerNo = 0;
-      state.status = `Next Move: ${symbol} ${name}`;
+    },
+    daleksCrashed: (state) => {
+      const { daleks, rubble } = state;
+      const {
+        nextDaleks,
+        nextRubble,
+      } = collideDaleks(daleks, rubble);
+      state.daleks = nextDaleks;
+      state.rubble = nextRubble;
     },
   },
 });
 
 export const {
+  advancePlayer,
+  advanceStatus,
   playerMoveAllowed,
   daleksMoved,
+  daleksCrashed,
 } = gameSlice.actions;
 
-export const selectPlayers = (state) => state.game.players;
-export const selectDaleks = (state) => state.game.daleks;
-export const selectStatus = (state) => state.game.status;
+export const maybeDaleksMove = () => (dispatch, getState) => {
+  const { game: { isPlayersTurn } } = getState();
 
-export const playerMoveAttempted = ({ x, y }) => (dispatch, getState) => {
-  const { game: {
-    playerNo,
-    players,
-    daleks,
-  } } = getState();
-
-  if (playerNo === nPlayers) {
+  if (isPlayersTurn) {
     return;
   }
 
-  if (!isValidMove(playerNo, players, daleks, { x, y })) {
+  timePromise()
+    .then(() => { dispatch(daleksMoved()); })
+    .then(() => { dispatch(daleksCrashed()); })
+    .then(() => timePromise(animationSeconds * 1000))
+    .then(() => { dispatch(advancePlayer(true)); })
+    .then(() => { dispatch(advanceStatus()); });
+};
+
+export const playerMoveAttempted = ({ x, y }) => (dispatch, getState) => {
+  const { game: {
+    isPlayersTurn,
+    playerNo,
+    players,
+    daleks,
+    rubble,
+  } } = getState();
+
+  if (!isPlayersTurn) {
+    return;
+  }
+
+  if (!isValidMove(playerNo, players, daleks, rubble, { x, y })) {
     console.log('invalid move requested');
     return;
   }
 
-  dispatch(playerMoveAllowed({ loc: { x, y } }));
-
-  setImmediate(() => dispatch(daleksMoved()));
+  timePromise()
+    .then(() => { dispatch(playerMoveAllowed({ loc: { x, y } })); })
+    .then(() => timePromise(animationSeconds * 1000))
+    .then(() => { dispatch(advancePlayer()); })
+    .then(() => { dispatch(advanceStatus()); })
+    .then(() => { dispatch(maybeDaleksMove()); });
 };
+
+export const selectStatus = (state) => state.game.status;
+export const selectSprites = ({
+  game: {
+    players,
+    daleks,
+    rubble,
+  },
+}) => [
+  ...players,
+  ...daleks,
+  ...rubble,
+];
+export const selectAnimationSeconds = (state) => state.game.animationSeconds;
 
 export default gameSlice.reducer;

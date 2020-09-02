@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable no-continue */
 
-export const BOARD_SIZE = 10;
+export const BOARD_SIZE = 14;
 const DALEK_COUNT = 20;
 const MAX_ATTEMPTS = 100;
 
@@ -9,14 +9,15 @@ const DALEK_SYMBOL = '☖';
 const DOCTOR_SYMBOL = '☗';
 const DONNA_SYMBOL = '👰';
 const AMY_SYMBOL = '🔺';
+const RUBBLE_SYMBOL = '✾';
 
-export const PLAYER_TEMPLATES = [
+const PLAYER_TEMPLATES = [
   { name: 'Doctor', symbol: DOCTOR_SYMBOL },
   { name: 'Donna', symbol: DONNA_SYMBOL },
   { name: 'Amy', symbol: AMY_SYMBOL },
 ];
 
-export const getDist = (
+const getDist = (
   { x: x1, y: y1 },
   { x: x2, y: y2 },
   useEuclidean = false,
@@ -110,11 +111,12 @@ export const placePlayers = (n = PLAYER_TEMPLATES.length, existing = []) => {
   });
 };
 
-const getValidMoves = (playerNo, players, daleks) => {
+const getValidMoves = (playerNo, players, daleks, rubble) => {
   const validMoves = [];
   const elements = [
     ...players.filter((player, i) => i !== playerNo),
     ...daleks,
+    ...rubble,
   ];
 
   const { loc: { x, y } } = players[playerNo];
@@ -146,8 +148,8 @@ const getValidMoves = (playerNo, players, daleks) => {
   return validMoves;
 };
 
-export const isValidMove = (playerNo, players, daleks, { x, y }) => {
-  const validMoves = getValidMoves(playerNo, players, daleks);
+export const isValidMove = (playerNo, players, daleks, rubble, { x, y }) => {
+  const validMoves = getValidMoves(playerNo, players, daleks, rubble);
 
   if (validMoves.length === 0) {
     throw new Error('NO VALID MOVES AVAILABLE');
@@ -156,7 +158,7 @@ export const isValidMove = (playerNo, players, daleks, { x, y }) => {
   return validMoves.some(({ x: mx, y: my }) => mx === x && my === y);
 };
 
-export const getDalekMoves = (players, daleks) => daleks.map((dalek) => {
+export const getDalekMoves = (players, daleks) => daleks.forEach((dalek) => {
   const nearestPlayer = players.reduce((acc, cur) => {
     if (acc === undefined) {
       return cur;
@@ -186,8 +188,43 @@ export const getDalekMoves = (players, daleks) => daleks.map((dalek) => {
     }
   }
 
-  return {
-    ...dalek,
-    loc: newLoc,
-  };
+  // eslint-disable-next-line no-param-reassign
+  dalek.loc = newLoc; // uses immer
 });
+
+export const timePromise = (ms = 1) => new Promise(((res) => { setTimeout(res, ms); }));
+
+export const collideDaleks = (daleks, rubble) => {
+  const nextRubble = rubble.map(((a) => ({ ...a })));
+  const nextDaleks = daleks
+    .map((dalek) => {
+      if (daleks.some(
+        (otherDalek) => {
+          if (!otherDalek || !otherDalek.loc) {
+            return false;
+          }
+          if (dalek === otherDalek) {
+            return false;
+          }
+
+          return getDist(dalek.loc, otherDalek.loc) === 0;
+        },
+      )) {
+        rubble.push({
+          name: `rubble-${rubble.length}`,
+          symbol: RUBBLE_SYMBOL,
+          loc: dalek.loc,
+        });
+        return null;
+      }
+
+      return dalek;
+    }).filter(
+      (d) => d,
+    );
+
+  return {
+    nextDaleks,
+    nextRubble,
+  };
+};

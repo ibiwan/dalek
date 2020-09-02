@@ -6,21 +6,15 @@ import { BOARD_SIZE } from './daleks';
 
 import {
   playerMoveAttempted,
-  selectPlayers,
-  selectDaleks,
+  selectSprites,
   selectStatus,
 } from './gameSlice';
 
 function Game() {
-  const daleks = useSelector(selectDaleks);
-  const players = useSelector(selectPlayers);
+  const sprites = useSelector(selectSprites);
   const status = useSelector(selectStatus);
-  const dispatch = useDispatch();
 
-  const elements = [
-    ...players,
-    ...daleks,
-  ];
+  const dispatch = useDispatch();
 
   return (
     <div className="game">
@@ -31,7 +25,7 @@ function Game() {
         <Board {...{
           handleClick: (x, y) => dispatch(playerMoveAttempted({ x, y })),
           size: BOARD_SIZE,
-          elements,
+          sprites,
         }}
         />
       </div>

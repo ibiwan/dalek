@@ -5,13 +5,13 @@ import { AnimateSharedLayout } from 'framer-motion';
 import Square from '../square/Square';
 import { makeNewBoard } from '../game/daleks';
 
-function Board({ size, elements, handleClick }) {
+function Board({ size, sprites, handleClick }) {
   const squares = makeNewBoard(size);
 
-  elements.forEach(({
+  sprites.forEach(({
     name,
     symbol,
-    loc: { x, y },
+    loc: { x, y } = {},
   }) => {
     squares[x][y] = { name, symbol };
   });
@@ -47,7 +47,7 @@ function Board({ size, elements, handleClick }) {
 
 Board.propTypes = {
   size: PropTypes.number.isRequired,
-  elements: PropTypes.arrayOf(
+  sprites: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string,
       x: PropTypes.number,
