@@ -2,7 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
-import { selectAnimationSeconds } from '../game/gameSlice';
+import { selectAnimationSeconds } from 'feature/game/gameSlice';
+import  styles from './square.module.css';
 
 const Square = ({
   id, i, j, value = null, handleClick,
@@ -12,7 +13,7 @@ const Square = ({
   return (
     <motion.button
       type="button"
-      className="square"
+      className={styles.square}
       onClick={() => handleClick(i, j)}
     >
       <motion.div

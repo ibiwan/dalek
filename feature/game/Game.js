@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Board from '../board/Board';
+import Board from 'feature/board/Board';
+import styles from './game.module.css'
 
 import { BOARD_SIZE } from './daleks';
 
@@ -17,9 +18,9 @@ function Game() {
   const dispatch = useDispatch();
 
   return (
-    <div className="game">
-      <div className="game-board">
-        <div className="game-info">
+    <div className={styles.game} >
+      <div>
+        <div className={styles.gameInfo}>
           <div>{status}</div>
         </div>
         <Board {...{

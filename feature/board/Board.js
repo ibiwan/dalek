@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { AnimateSharedLayout } from 'framer-motion';
 
-import Square from '../square/Square';
-import { makeNewBoard } from '../game/daleks';
+import Square from 'feature/square/Square';
+import { makeNewBoard } from 'feature/game/daleks';
 
 function Board({ size, sprites, handleClick }) {
   const squares = makeNewBoard(size);
